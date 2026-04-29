@@ -486,15 +486,96 @@ function Content() {
   );
 }
 
-const DEBATES = [
-  "Was the war really about slavery — or states' rights?",
-  "Was Lincoln truly an abolitionist?",
-  "Should Confederate monuments remain standing?",
-  "Was Reconstruction a failure?",
-  'Were there "good people on both sides"?',
+const DEBATES: { q: string; a: string }[] = [
+  {
+    q: "Was the war really about slavery — or states' rights?",
+    a: "Modern historians overwhelmingly agree slavery was the central cause. The Confederate states' own declarations of secession explicitly named the protection of slavery as their reason for leaving the Union. The “states' rights” framing emerged later, largely as part of the post-war Lost Cause narrative — and the right most at stake was the right to own human beings.",
+  },
+  {
+    q: "Was Lincoln truly an abolitionist?",
+    a: "Lincoln personally opposed slavery on moral grounds, but he was a pragmatic politician first. Early in the war he prioritized preserving the Union over emancipation. The Emancipation Proclamation (1863) was both a moral act and a strategic one. By the war's end he had fully committed to abolition, championing the 13th Amendment shortly before his assassination.",
+  },
+  {
+    q: "Should Confederate monuments remain standing?",
+    a: "Most Confederate monuments were not erected right after the war but during the Jim Crow era and the civil rights movement — periods of racial backlash — to assert white supremacy. Critics argue they glorify treason and oppression; defenders see them as heritage. Many cities have moved them to museums or cemeteries where they can be contextualized rather than honored in public squares.",
+  },
+  {
+    q: "Was Reconstruction a failure?",
+    a: "It depends how you measure it. Reconstruction produced extraordinary gains — the 13th, 14th, and 15th Amendments, Black congressmen, public schools in the South. But after federal troops withdrew in 1877, white Southern Democrats dismantled those protections through violence, Black Codes, and Jim Crow laws. The promise of Reconstruction was real; its abandonment was the failure.",
+  },
+  {
+    q: 'Were there "good people on both sides"?',
+    a: "Individual soldiers fought for many reasons — duty, family, community, conscription. But the cause itself was not morally symmetrical. The Confederacy was founded explicitly to preserve chattel slavery. You can acknowledge the humanity of individuals while rejecting any equivalence between the two causes they served.",
+  },
 ];
 
+function ControversyItem({
+  item,
+  index,
+  isOpen,
+  onToggle,
+}: {
+  item: { q: string; a: string };
+  index: number;
+  isOpen: boolean;
+  onToggle: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      whileInView={{ opacity: 1, x: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.5, delay: index * 0.07 }}
+      className={`rounded-2xl border bg-card/60 transition-colors ${
+        isOpen ? "border-accent/60" : "border-border hover:border-accent/40"
+      }`}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        aria-expanded={isOpen}
+        className="w-full flex items-start gap-5 p-6 text-left"
+      >
+        <span className="font-heading italic text-3xl text-accent leading-none mt-1 flex-shrink-0">
+          ?
+        </span>
+        <p className="font-heading text-lg sm:text-xl text-foreground/90 leading-snug flex-1">
+          {item.q}
+        </p>
+        <motion.span
+          animate={{ rotate: isOpen ? 180 : 0 }}
+          transition={{ duration: 0.3 }}
+          className="text-muted-foreground mt-1 flex-shrink-0"
+        >
+          <ChevronDown className="w-5 h-5" />
+        </motion.span>
+      </button>
+      <AnimatePresence initial={false}>
+        {isOpen && (
+          <motion.div
+            key="content"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.35, ease: "easeOut" }}
+            className="overflow-hidden"
+          >
+            <div className="px-6 pb-6 pl-[calc(1.5rem+2.25rem+1.25rem)] sm:pr-14">
+              <div className="border-l-2 border-accent/40 pl-5">
+                <p className="font-body text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {item.a}
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
 function Controversies() {
+  const [openIdx, setOpenIdx] = useState<number | null>(null);
   return (
     <section
       id="controversies"
@@ -508,22 +589,14 @@ function Controversies() {
         />
 
         <div className="space-y-4">
-          {DEBATES.map((q, i) => (
-            <motion.div
-              key={q}
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{ duration: 0.5, delay: i * 0.07 }}
-              className="flex items-start gap-5 rounded-2xl border border-border bg-card/60 p-6 hover:border-accent/50 transition-colors"
-            >
-              <span className="font-heading italic text-3xl text-accent leading-none mt-1">
-                ?
-              </span>
-              <p className="font-heading text-lg sm:text-xl text-foreground/90 leading-snug">
-                {q}
-              </p>
-            </motion.div>
+          {DEBATES.map((d, i) => (
+            <ControversyItem
+              key={d.q}
+              item={d}
+              index={i}
+              isOpen={openIdx === i}
+              onToggle={() => setOpenIdx(openIdx === i ? null : i)}
+            />
           ))}
         </div>
       </div>
